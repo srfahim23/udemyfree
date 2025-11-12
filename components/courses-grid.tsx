@@ -23,22 +23,24 @@ export function CoursesGrid() {
   }, [searchTerm, selectedCategory, selectedAvailability, courses])
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mb-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="py-12 pb-4">
         <h2 className="mb-2 text-2xl font-bold text-foreground">Browse Courses</h2>
         <p className="text-muted-foreground">
           Found {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""}
         </p>
       </div>
 
-      <SearchFilter
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        selectedAvailability={selectedAvailability}
-        setSelectedAvailability={setSelectedAvailability}
-      />
+      <div className="sticky top-0 z-10 mb-8 bg-background pb-4 pt-2">
+        <SearchFilter
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          selectedAvailability={selectedAvailability}
+          setSelectedAvailability={setSelectedAvailability}
+        />
+      </div>
 
       {filteredCourses.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
