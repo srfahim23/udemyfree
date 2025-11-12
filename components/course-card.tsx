@@ -1,10 +1,16 @@
 "use client"
 
 import type { Course } from "@/lib/types"
-import { ExternalLink, Copy } from "lucide-react"
+import { ExternalLink, Copy, Check } from "lucide-react"
 import { useState } from "react"
 
-export function CourseCard({ course }: { course: Course }) {
+interface CourseCardProps {
+  course: Course
+  isVisited?: boolean
+  onVisit?: () => void
+}
+
+export function CourseCard({ course, isVisited = false, onVisit }: CourseCardProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopyCode = () => {
@@ -13,19 +19,35 @@ export function CourseCard({ course }: { course: Course }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleVisitCourse = () => {
+    onVisit?.()
+  }
+
   const courseUrl = new URL(course.link)
   courseUrl.searchParams.append("couponCode", course.coupon_code)
   const courseUrlWithCoupon = courseUrl.toString()
 
   return (
-    <div className="group flex flex-col rounded-lg border border-border bg-card p-6 transition-all hover:shadow-lg hover:border-accent">
+    <div
+      className={`group flex flex-col rounded-lg border bg-card p-6 transition-all hover:shadow-lg ${
+        isVisited ? "border-muted-foreground/30 opacity-75" : "border-border hover:border-accent"
+      }`}
+    >
       <div className="mb-4 flex items-start justify-between gap-2">
         <div className="flex-1">
           <h3 className="line-clamp-2 text-lg font-semibold text-foreground">{course.title}</h3>
         </div>
-        <span className="whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground">
-          {course.badge}
-        </span>
+        <div className="flex items-center gap-2">
+          {isVisited && (
+            <span className="whitespace-nowrap rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground flex items-center gap-1">
+              <Check className="h-3 w-3" />
+              Visited
+            </span>
+          )}
+          <span className="whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground">
+            {course.badge}
+          </span>
+        </div>
       </div>
 
       <p className="mb-4 flex-1 text-sm text-muted-foreground">{course.title}</p>
@@ -54,11 +76,16 @@ export function CourseCard({ course }: { course: Course }) {
 
       <a
         href={courseUrlWithCoupon}
+        onClick={handleVisitCourse}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:opacity-90"
+        className={`inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 font-medium transition-colors ${
+          isVisited
+            ? "bg-muted text-muted-foreground hover:opacity-80"
+            : "bg-primary text-primary-foreground hover:opacity-90"
+        }`}
       >
-        Visit Course
+        {isVisited ? "Visit Again" : "Visit Course"}
         <ExternalLink className="h-4 w-4" />
       </a>
     </div>
