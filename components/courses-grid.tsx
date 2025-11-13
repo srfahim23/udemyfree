@@ -8,6 +8,10 @@ import coursesData from "@/data/courses.json"
 
 const COURSES_PER_PAGE = 20
 
+interface CourseWithCount extends Course {
+  availableCount: number
+}
+
 export function CoursesGrid() {
   const courses: Course[] = coursesData.courses
   const [searchTerm, setSearchTerm] = useState("")
@@ -27,15 +31,37 @@ export function CoursesGrid() {
     localStorage.setItem("visitedCourses", JSON.stringify(Array.from(visitedCourses)))
   }, [visitedCourses])
 
+  const uniqueCoursesWithCount = useMemo(() => {
+    const courseMap = new Map<string, CourseWithCount>()
+
+    courses.forEach((course) => {
+      if (courseMap.has(course.id)) {
+        const existing = courseMap.get(course.id)!
+        existing.availableCount += 1
+      } else {
+        courseMap.set(course.id, {
+          ...course,
+          availableCount: 1,
+        })
+      }
+    })
+
+    return Array.from(courseMap.values())
+  }, [courses])
+
   const filteredCourses = useMemo(() => {
-    return courses.filter((course) => {
+    return uniqueCoursesWithCount.filter((course) => {
       const matchesTitle = course.title.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = selectedCategory === "all" || course.category === selectedCategory
       const matchesAvailability = selectedAvailability === "all" || course.availability === selectedAvailability
 
       return matchesTitle && matchesCategory && matchesAvailability
     })
-  }, [searchTerm, selectedCategory, selectedAvailability, courses])
+  }, [searchTerm, selectedCategory, selectedAvailability, uniqueCoursesWithCount])
+
+  const totalCoursesCount = useMemo(() => {
+    return filteredCourses.reduce((sum, course) => sum + course.availableCount, 0)
+  }, [filteredCourses])
 
   const totalPages = Math.ceil(filteredCourses.length / COURSES_PER_PAGE)
   const startIndex = (currentPage - 1) * COURSES_PER_PAGE
@@ -46,6 +72,11 @@ export function CoursesGrid() {
     setSelectedCategory(newCategory)
     setSelectedAvailability(newAvailability)
     setCurrentPage(1)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   const markCourseAsVisited = (courseId: string) => {
@@ -86,7 +117,8 @@ export function CoursesGrid() {
       <div className="py-12 pb-4">
         <h2 className="mb-2 text-2xl font-bold text-foreground">Browse Courses</h2>
         <p className="text-muted-foreground">
-          Found {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""}
+          Found {filteredCourses.length} unique course{filteredCourses.length !== 1 ? "s" : ""} ({totalCoursesCount}{" "}
+          available total)
         </p>
       </div>
 
@@ -108,6 +140,7 @@ export function CoursesGrid() {
               <CourseCard
                 key={course.id}
                 course={course}
+                availableCount={(course as CourseWithCount).availableCount}
                 isVisited={visitedCourses.has(course.id)}
                 onVisit={() => markCourseAsVisited(course.id)}
               />
@@ -117,7 +150,7 @@ export function CoursesGrid() {
           {totalPages > 1 && (
             <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
               <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
                 className="rounded-lg border border-muted-foreground/30 px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -128,7 +161,7 @@ export function CoursesGrid() {
                 {getPageNumbers().map((page, idx) => (
                   <button
                     key={idx}
-                    onClick={() => typeof page === "number" && setCurrentPage(page)}
+                    onClick={() => typeof page === "number" && handlePageChange(page)}
                     disabled={page === "..."}
                     className={`h-10 min-w-10 rounded-lg border transition-colors ${
                       page === "..."
@@ -144,7 +177,7 @@ export function CoursesGrid() {
               </div>
 
               <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
                 className="rounded-lg border border-muted-foreground/30 px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
               >

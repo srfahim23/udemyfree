@@ -6,11 +6,12 @@ import { useState } from "react"
 
 interface CourseCardProps {
   course: Course
+  availableCount?: number
   isVisited?: boolean
   onVisit?: () => void
 }
 
-export function CourseCard({ course, isVisited = false, onVisit }: CourseCardProps) {
+export function CourseCard({ course, availableCount = 1, isVisited = false, onVisit }: CourseCardProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopyCode = () => {
@@ -51,6 +52,12 @@ export function CourseCard({ course, isVisited = false, onVisit }: CourseCardPro
       </div>
 
       <p className="mb-4 flex-1 text-sm text-muted-foreground">{course.title}</p>
+
+      {availableCount > 1 && (
+        <div className="mb-3 rounded-md bg-blue-500/10 px-3 py-2 border border-blue-500/30">
+          <p className="text-sm font-medium text-blue-600">Available in {availableCount} sources</p>
+        </div>
+      )}
 
       <div className="mb-4 space-y-2 rounded-md bg-muted p-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Coupon Code</p>
