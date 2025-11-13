@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-
+import { mergeCourses } from "@/lib/merge-courses"
 import type { Course } from "@/lib/types"
 import coursesData from "@/data/courses.json"
 
