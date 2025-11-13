@@ -13,7 +13,24 @@ interface CourseWithCount extends Course {
 }
 
 export function CoursesGrid() {
-  const courses: Course[] = coursesData.courses
+  const [courses, setCourses] = useState<Course[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const savedCourses = localStorage.getItem("merged_courses")
+    if (savedCourses) {
+      try {
+        setCourses(JSON.parse(savedCourses))
+      } catch (error) {
+        console.error("[v0] Error loading merged courses:", error)
+        setCourses(coursesData.courses)
+      }
+    } else {
+      setCourses(coursesData.courses)
+    }
+    setLoading(false)
+  }, [])
+
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedAvailability, setSelectedAvailability] = useState("all")
@@ -110,6 +127,14 @@ export function CoursesGrid() {
     }
 
     return pages
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center text-muted-foreground">Loading courses...</div>
+      </div>
+    )
   }
 
   return (
